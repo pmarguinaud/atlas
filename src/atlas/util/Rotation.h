@@ -58,6 +58,7 @@ private:
 
     bool rotation_angle_only_;
     bool rotated_;
+    bool arpege_ = false;
 };
 
 }  // namespace util

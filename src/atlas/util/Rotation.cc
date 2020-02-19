@@ -70,6 +70,94 @@ PointLonLat Rotation::unrotate( const PointLonLat& p ) const {
     return unrotated;
 }
 
+using RotationMatrix = std::array<std::array<double, 3>, 3>;
+
+static
+RotationMatrix getRotationMatrixAroundAxis (double pangl, const PointXYZ & paxis)
+{
+  RotationMatrix rotate;
+  PointXYZ zaxis = paxis  * (1.0 / sqrt (PointXYZ::dot (paxis, paxis)));
+
+  pangl *= Constants::degreesToRadians ();
+
+  double zcos = cos (pangl), zsin = sin (pangl);
+
+  for (int i = 0; i < 3; i++)
+    {
+      PointXYZ zvect (0.0, 0.0, 0.0);
+      zvect[i] = 1.0;
+
+      double zscal = PointXYZ::dot (zvect, zaxis);
+
+      zvect = zvect - zaxis * zscal;
+
+// Produit vectoriel : on fait tourner zvect
+      PointXYZ zrota = PointXYZ::cross (zaxis, zvect);
+
+// On rajoute la composante selon ZAXIS a ce qui a tourne
+      zvect = zvect * zcos + zrota * zsin + zaxis * zscal;
+
+      for (int j = 0; j < 3; j++)
+        rotate[i][j] = zvect[j];
+
+    }
+
+  return rotate;
+}
+
+RotationMatrix operator* (const RotationMatrix & m1, const RotationMatrix & m2)
+{
+  RotationMatrix m;
+  for (int i = 0; i < 3; i++)
+  for (int j = 0; j < 3; j++)
+    {
+      m[i][j] = 0.0;
+      for (int k = 0; k < 3; k++)
+        m[i][j] += m1[i][k] * m2[k][j];
+    }
+  return m;
+}
+
+static
+void transposeMatrix (RotationMatrix * m)
+{
+  for (int i = 0; i < 3; i++)
+  for (int j = 0; j < i; j++)
+    std::swap ((*m)[i][j], (*m)[j][i]);
+}
+
+static
+void getMeteoFranceRotationMatrix (const PointLonLat & center, RotationMatrix * rotd, RotationMatrix * roti)
+{
+  RotationMatrix zrot1, zrot2;
+
+// Direct
+
+  zrot1 = getRotationMatrixAroundAxis (+90.0 - center.lat (), 
+                                       PointXYZ (-sin (center.lon () * Constants::degreesToRadians ()),
+                                                 +cos (center.lon () * Constants::degreesToRadians ()),
+                                                 0.0));
+  zrot2 = getRotationMatrixAroundAxis (+180.0 + center.lon (), PointXYZ (0.0, 0.0, 1.0));
+
+  *rotd = zrot2 * zrot1;
+
+  transposeMatrix (rotd);
+
+// Inverse
+
+  zrot1 = getRotationMatrixAroundAxis (-90.0 + center.lat (),
+                                       PointXYZ (-sin (center.lon () * Constants::degreesToRadians ()),
+                                                 +cos (center.lon () * Constants::degreesToRadians ()),
+                                                 0.0));
+  zrot2 = getRotationMatrixAroundAxis (-180.0 - center.lon (), PointXYZ (0.0, 0.0, 1.0));
+   
+  *roti = zrot1 * zrot2;
+
+  transposeMatrix (roti);
+}
+
+
+
 void Rotation::precompute() {
     const double theta = -( 90. + spole_.lat() ) * Constants::degreesToRadians();
     const double phi   = -spole_.lon() * Constants::degreesToRadians();
@@ -89,38 +177,46 @@ void Rotation::precompute() {
         return;
     }
 
-    // Pt = Rot(z) * Rot(y) * P,   rotate about y axes then z
-    // Since we're undoing the rotation described in the definition
-    // of the coordinate system,
-    // we first rotate by ϑ = -(90 + spole_.lat()) around the y axis
-    // (along the rotated Greenwich meridian)
-    // and then by φ = -spole_.lon() degrees around the z axis):
-    // (xt)   ( cos(φ), sin(φ), 0) (  cos(ϑ), 0, sin(ϑ)) (x)
-    // (yt) = (-sin(φ), cos(φ), 0).(  0     , 1, 0     ).(y)
-    // (zt)   ( 0     , 0     , 1) ( -sin(ϑ), 0, cos(ϑ)) (z)
-
-    // Expanded
-    // xt =  cos(ϑ) cos(φ) x + sin(φ) y + sin(ϑ) cos(φ) z
-    // yt = -cos(ϑ) sin(φ) x + cos(φ) y - sin(ϑ) sin(φ) z
-    // zt = -sin(ϑ)        x            + cos(ϑ)        z
-
-    rotate_ = {cos_theta * cos_phi,  sin_phi, sin_theta * cos_phi,
-               -cos_theta * sin_phi, cos_phi, -sin_theta * sin_phi,
-               -sin_theta,           0.,      cos_theta};
-
-    // Assume right hand rule, rotate about z axes and then y
-    // P = Rot(y) * Rot(z) * Pt
-    // x   (  cos(ϑ), 0, -sin(ϑ)) ( cos(φ), -sin(φ), 0) (xt)
-    // y = (  0     , 1,  0     ) ( sin(φ), cos(φ),  0) (yt)
-    // z   ( sin(ϑ), 0,   cos(ϑ)) ( 0     , 0     ,  1) (zt)
-
-    // Expanded
-    // x   ( cos(ϑ)cos(φ) , -cos(ϑ)sin(φ) , -sin(ϑ)) (xt)
-    // y = ( sin(φ)       ,  cos(φ)       ,  0     ).(yt)
-    // z   ( sin(ϑ) cos(φ), -sin(ϑ) sin(φ),  cos(ϑ)) (zt)
-
-    unrotate_ = {cos_theta * cos_phi, -cos_theta * sin_phi, -sin_theta, sin_phi, cos_phi, 0.,
-                 sin_theta * cos_phi, -sin_theta * sin_phi, cos_theta};
+    if (arpege_)
+      {
+        getMeteoFranceRotationMatrix (npole_, &rotate_, &unrotate_);
+      }
+    else
+      {
+        // Pt = Rot(z) * Rot(y) * P,   rotate about y axes then z
+        // Since we're undoing the rotation described in the definition
+        // of the coordinate system,
+        // we first rotate by ϑ = -(90 + spole_.lat()) around the y axis
+        // (along the rotated Greenwich meridian)
+        // and then by φ = -spole_.lon() degrees around the z axis):
+        // (xt)   ( cos(φ), sin(φ), 0) (  cos(ϑ), 0, sin(ϑ)) (x)
+        // (yt) = (-sin(φ), cos(φ), 0).(  0     , 1, 0     ).(y)
+        // (zt)   ( 0     , 0     , 1) ( -sin(ϑ), 0, cos(ϑ)) (z)
+     
+        // Expanded
+        // xt =  cos(ϑ) cos(φ) x + sin(φ) y + sin(ϑ) cos(φ) z
+        // yt = -cos(ϑ) sin(φ) x + cos(φ) y - sin(ϑ) sin(φ) z
+        // zt = -sin(ϑ)        x            + cos(ϑ)        z
+     
+        rotate_ = {cos_theta * cos_phi,  sin_phi, sin_theta * cos_phi,
+                   -cos_theta * sin_phi, cos_phi, -sin_theta * sin_phi,
+                   -sin_theta,           0.,      cos_theta};
+     
+        // Assume right hand rule, rotate about z axes and then y
+        // P = Rot(y) * Rot(z) * Pt
+        // x   (  cos(ϑ), 0, -sin(ϑ)) ( cos(φ), -sin(φ), 0) (xt)
+        // y = (  0     , 1,  0     ) ( sin(φ), cos(φ),  0) (yt)
+        // z   ( sin(ϑ), 0,   cos(ϑ)) ( 0     , 0     ,  1) (zt)
+     
+        // Expanded
+        // x   ( cos(ϑ)cos(φ) , -cos(ϑ)sin(φ) , -sin(ϑ)) (xt)
+        // y = ( sin(φ)       ,  cos(φ)       ,  0     ).(yt)
+        // z   ( sin(ϑ) cos(φ), -sin(ϑ) sin(φ),  cos(ϑ)) (zt)
+     
+        unrotate_ = {cos_theta * cos_phi, -cos_theta * sin_phi, -sin_theta, sin_phi, cos_phi, 0.,
+                     sin_theta * cos_phi, -sin_theta * sin_phi, cos_theta};
+      }
+     
 }
 
 Rotation::Rotation( const PointLonLat& south_pole, double rotation_angle ) {
@@ -156,10 +252,12 @@ Rotation::Rotation( const eckit::Parametrisation& p ) {
         }
     }
 
+    if (p.has ("arpege"))
+      p.get ("arpege", arpege_);
+
     precompute();
 }
 
-using RotationMatrix = std::array<std::array<double, 3>, 3>;
 
 inline PointXYZ rotate_geocentric( const PointXYZ& p, const RotationMatrix& R ) {
     return PointXYZ( R[XX][XX] * p.x() + R[XX][YY] * p.y() + R[XX][ZZ] * p.z(),
