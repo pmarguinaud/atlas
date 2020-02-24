@@ -98,7 +98,7 @@ RotationMatrix getRotationMatrixAroundAxis (double pangl, const PointXYZ & paxis
       zvect = zvect * zcos + zrota * zsin + zaxis * zscal;
 
       for (int j = 0; j < 3; j++)
-        rotate[i][j] = zvect[j];
+        rotate[j][i] = zvect[j];
 
     }
 
@@ -139,9 +139,7 @@ void getMeteoFranceRotationMatrix (const PointLonLat & center, RotationMatrix * 
                                                  0.0));
   zrot2 = getRotationMatrixAroundAxis (+180.0 + center.lon (), PointXYZ (0.0, 0.0, 1.0));
 
-  *rotd = zrot2 * zrot1;
-
-  transposeMatrix (rotd);
+  *rotd = zrot1 * zrot2;
 
 // Inverse
 
@@ -151,9 +149,7 @@ void getMeteoFranceRotationMatrix (const PointLonLat & center, RotationMatrix * 
                                                  0.0));
   zrot2 = getRotationMatrixAroundAxis (-180.0 - center.lon (), PointXYZ (0.0, 0.0, 1.0));
    
-  *roti = zrot1 * zrot2;
-
-  transposeMatrix (roti);
+  *roti = zrot2 * zrot1;
 }
 
 
