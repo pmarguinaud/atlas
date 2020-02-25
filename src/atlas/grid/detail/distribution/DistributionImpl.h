@@ -18,11 +18,21 @@
 
 #include "atlas/library/config.h"
 
+
+namespace eckit {
+class Parametrisation;
+}
+
 namespace atlas {
 
 class Grid;
 namespace grid {
 class Partitioner;
+namespace detail {
+namespace grid {
+class Grid;
+}
+}
 }
 
 }  // namespace atlas
@@ -72,7 +82,11 @@ private:
     std::string type_;
 };
 
+using GridImpl = atlas::grid::detail::grid::Grid;
+
 extern "C" {
+
+DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * grid, const eckit::Parametrisation * config);
 DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part0 );
 void atlas__GridDistribution__delete( DistributionImpl* This );
 }

@@ -146,6 +146,13 @@ DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part
     return new DistributionImpl( 0, npts, part, part0 );
 }
 
+DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _grid, const eckit::Parametrisation * config)
+{
+  Grid grid (_grid);
+  Partitioner partitioner (*config);
+  return new DistributionImpl (grid, partitioner);
+}
+
 void atlas__GridDistribution__delete( DistributionImpl* This ) {
     delete This;
 }

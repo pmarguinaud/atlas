@@ -50,6 +50,7 @@ END TYPE atlas_GridDistribution
 interface atlas_GridDistribution
   module procedure atlas_GridDistribution__cptr
   module procedure atlas_GridDistribution__ctor
+  module procedure atlas_GridDistribution__ctor_gridconfig
 end interface
 
 private :: c_ptr
@@ -81,6 +82,17 @@ function atlas_GridDistribution__ctor( part, part0 ) result(this)
   if( present(part0) ) opt_part0 = part0
   npts = size(part)
   call this%reset_c_ptr( atlas__GridDistribution__new(npts, part, opt_part0) )
+  call this%return()
+end function
+
+function atlas_GridDistribution__ctor_gridconfig( grid, config ) result(this)
+  use atlas_distribution_c_binding
+  use atlas_Config_module, only : atlas_Config
+  use atlas_Grid_module, only : atlas_ReducedGaussianGrid
+  type(atlas_GridDistribution) :: this
+  type(atlas_ReducedGaussianGrid), intent (in) :: grid
+  type(atlas_Config), intent(in) :: config
+  call this%reset_c_ptr( atlas__GridDistribution__new_gridconfig(grid%CPTR_PGIBUG_A, config%CPTR_PGIBUG_B) )
   call this%return()
 end function
 
