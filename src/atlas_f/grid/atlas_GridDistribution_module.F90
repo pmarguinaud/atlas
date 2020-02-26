@@ -10,6 +10,7 @@
 
 module atlas_GridDistribution_module
 
+use atlas_Grid_module, only : atlas_Grid
 use fckit_owned_object_module, only: fckit_owned_object
 use, intrinsic :: iso_c_binding, only : c_ptr
 
@@ -90,7 +91,7 @@ function atlas_GridDistribution__ctor_gridconfig( grid, config ) result(this)
   use atlas_Config_module, only : atlas_Config
   use atlas_Grid_module, only : atlas_ReducedGaussianGrid
   type(atlas_GridDistribution) :: this
-  type(atlas_ReducedGaussianGrid), intent (in) :: grid
+  class(atlas_Grid), intent (in) :: grid
   type(atlas_Config), intent(in) :: config
   call this%reset_c_ptr( atlas__GridDistribution__new_gridconfig(grid%CPTR_PGIBUG_A, config%CPTR_PGIBUG_B) )
   call this%return()
