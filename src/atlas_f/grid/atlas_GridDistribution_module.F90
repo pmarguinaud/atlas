@@ -107,7 +107,7 @@ function GridDistribution__partition_int32(this, i) result(partition)
   integer(c_int) :: partition
   class(atlas_GridDistribution), intent(in) :: this
   integer(c_int), intent(in) :: i
-  partition = atlas__GridDistribution__partition_int32(this%CPTR_PGIBUG_A, i)
+  partition = atlas__GridDistribution__partition_int32(this%CPTR_PGIBUG_A, i-1)
 end function
 
 function GridDistribution__partition_int64(this, i) result(partition)
@@ -116,7 +116,7 @@ function GridDistribution__partition_int64(this, i) result(partition)
   integer(c_long) :: partition
   class(atlas_GridDistribution), intent(in) :: this
   integer(c_long), intent(in) :: i
-  partition = atlas__GridDistribution__partition_int64(this%CPTR_PGIBUG_A, i)
+  partition = atlas__GridDistribution__partition_int64(this%CPTR_PGIBUG_A, i-1)
 end function
 
 function GridDistribution__nb_partitions(this) result(nb_partitions)
