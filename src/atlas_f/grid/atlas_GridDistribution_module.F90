@@ -41,6 +41,10 @@ TYPE, extends(fckit_owned_object) :: atlas_GridDistribution
 
 !------------------------------------------------------------------------------
 contains
+  procedure, private :: partition_int32 => GridDistribution__partition_int32
+  procedure, private :: partition_int64 => GridDistribution__partition_int64
+  procedure :: nb_partitions => GridDistribution__nb_partitions
+  generic :: partition => partition_int32, partition_int64
 #if FCKIT_FINAL_NOT_INHERITING
   final :: atlas_GridDistribution__final_auto
 #endif
@@ -95,6 +99,32 @@ function atlas_GridDistribution__ctor_gridconfig( grid, config ) result(this)
   type(atlas_Config), intent(in) :: config
   call this%reset_c_ptr( atlas__GridDistribution__new_gridconfig(grid%CPTR_PGIBUG_A, config%CPTR_PGIBUG_B) )
   call this%return()
+end function
+
+function GridDistribution__partition_int32(this, i) result(partition)
+  use, intrinsic :: iso_c_binding, only: c_long, c_int
+  use atlas_distribution_c_binding
+  integer(c_int) :: partition
+  class(atlas_GridDistribution), intent(in) :: this
+  integer(c_int), intent(in) :: i
+  partition = atlas__GridDistribution__partition_int32(this%CPTR_PGIBUG_A, i)
+end function
+
+function GridDistribution__partition_int64(this, i) result(partition)
+  use, intrinsic :: iso_c_binding, only: c_long, c_int
+  use atlas_distribution_c_binding
+  integer(c_long) :: partition
+  class(atlas_GridDistribution), intent(in) :: this
+  integer(c_long), intent(in) :: i
+  partition = atlas__GridDistribution__partition_int64(this%CPTR_PGIBUG_A, i)
+end function
+
+function GridDistribution__nb_partitions(this) result(nb_partitions)
+  use, intrinsic :: iso_c_binding, only: c_long
+  use atlas_distribution_c_binding
+  class(atlas_GridDistribution), intent(in) :: this
+  integer(c_long) :: nb_partitions
+  nb_partitions = atlas__GridDistribution__nb_partitions (this%CPTR_PGIBUG_A)
 end function
 
 ! ----------------------------------------------------------------------------------------

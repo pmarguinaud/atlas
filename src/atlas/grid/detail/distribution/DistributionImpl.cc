@@ -153,6 +153,21 @@ DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _gri
   return new DistributionImpl (grid, partitioner);
 }
 
+int atlas__GridDistribution__partition_int32 (DistributionImpl * dist, int i)
+{
+  return dist->partition (i);
+}
+
+long atlas__GridDistribution__partition_int64 (DistributionImpl * dist, long i)
+{
+  return dist->partition (i);
+}
+
+long atlas__GridDistribution__nb_partitions (DistributionImpl * dist)
+{
+  return dist->nb_partitions ();
+}
+
 void atlas__GridDistribution__delete( DistributionImpl* This ) {
     delete This;
 }

@@ -88,6 +88,9 @@ extern "C" {
 
 DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * grid, const eckit::Parametrisation * config);
 DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part0 );
+int atlas__GridDistribution__partition_int32 (DistributionImpl * dist, int i);
+long atlas__GridDistribution__partition_int64 (DistributionImpl * dist, long i);
+long atlas__GridDistribution__nb_partitions (DistributionImpl * dist);
 void atlas__GridDistribution__delete( DistributionImpl* This );
 }
 
