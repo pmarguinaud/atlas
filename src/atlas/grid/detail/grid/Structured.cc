@@ -646,6 +646,13 @@ idx_t atlas__grid__Structured__size( Structured* This ) {
     return This->size();
 }
 
+util::Config * atlas__grid__Structured__spec( Structured* This ) {
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
+    util::Config * config = new util::Config ();
+    *config = This->spec();
+    return config;
+}
+
 double atlas__grid__Structured__y( Structured* This, idx_t j ) {
     ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
     return This->y( j );
