@@ -15,6 +15,7 @@
 #include "DistributionImpl.h"
 
 #include "atlas/grid/Grid.h"
+#include "atlas/util/Config.h"
 #include "atlas/grid/Partitioner.h"
 #include "atlas/parallel/mpi/mpi.h"
 #include "atlas/parallel/omp/omp.h"
@@ -149,6 +150,9 @@ DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part
 DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _grid, const eckit::Parametrisation * config)
 {
   Grid grid (_grid);
+  int nbands = -1;
+  config->get ("nbands", nbands);
+  std::cout << " nbands = " << nbands << std::endl;
   Partitioner partitioner (*config);
   return new DistributionImpl (grid, partitioner);
 }
