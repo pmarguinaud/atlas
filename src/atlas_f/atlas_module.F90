@@ -70,6 +70,7 @@ use atlas_Grid_module, only: &
     & atlas_Grid, &
     & atlas_UnstructuredGrid, &
     & atlas_StructuredGrid, &
+    & atlas_LambertRegionalGrid, &
     & atlas_GaussianGrid, &
     & atlas_ReducedGaussianGrid, &
     & atlas_RegularGaussianGrid, &
