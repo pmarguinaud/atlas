@@ -51,7 +51,11 @@ public:
 
     ~Distribution();
 
-    int partition( const gidx_t gidx ) const;
+    // This method has to be inlined
+    int partition( const gidx_t gidx ) const
+    {
+      return get()->partition( gidx );
+    }
 
     const partition_t& partition() const;
 

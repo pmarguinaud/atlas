@@ -35,10 +35,6 @@ Distribution::Distribution( int nb_partitions, partition_t&& part ) :
 
 Distribution::~Distribution() = default;
 
-int Distribution::partition( const gidx_t gidx ) const {
-    return get()->partition( gidx );
-}
-
 const Distribution::partition_t& Distribution::partition() const {
     return get()->partition();
 }
