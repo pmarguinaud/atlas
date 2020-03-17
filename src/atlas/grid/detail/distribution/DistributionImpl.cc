@@ -35,6 +35,46 @@ std::string distribution_type( int N, const Partitioner& p = Partitioner() ) {
 }
 }  // namespace
 
+DistributionImpl::DistributionImpl( const Grid & grid, const Config & config )
+{
+  bool light = false;
+
+  config.get ("light", light);
+
+  if (light)
+    {  
+      gridsize_ = grid.size ();
+      nb_partitions_ = atlas::mpi::comm ().size ();
+      blocksize_ = 1;
+
+      config.get ("blocksize", blocksize_);
+     
+      nb_blocks_ = gridsize_ / blocksize_;
+     
+      if (gridsize_ % blocksize_)
+        nb_blocks_++;
+     
+      nb_pts_.reserve (nb_partitions_);
+     
+      for (idx_t iproc = 0; iproc < nb_partitions_; iproc++)
+         {
+           gidx_t imin = ((iproc + 0) * blocksize_ * nb_blocks_) / nb_partitions_;
+           gidx_t imax = ((iproc + 1) * blocksize_ * nb_blocks_) / nb_partitions_;
+           imax = std::min (imax, (gidx_t)gridsize_);
+           nb_pts_.push_back (imax-imin);
+         }
+     
+      max_pts_ = *std::max_element( nb_pts_.begin(), nb_pts_.end() );
+      min_pts_ = *std::min_element( nb_pts_.begin(), nb_pts_.end() );
+    }
+  else
+    {
+      throw_Exception ("TODO : create partitioner using config");
+    }
+
+}
+
+
 DistributionImpl::DistributionImpl( const Grid& grid ) :
     nb_partitions_( 1 ),
     part_( grid.size(), 0 ),
@@ -152,7 +192,6 @@ DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _gri
   Grid grid (_grid);
   int nbands = -1;
   config->get ("nbands", nbands);
-  std::cout << " nbands = " << nbands << std::endl;
   Partitioner partitioner (*config);
   return new DistributionImpl (grid, partitioner);
 }

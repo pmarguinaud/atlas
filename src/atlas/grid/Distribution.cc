@@ -22,6 +22,7 @@ namespace atlas {
 namespace grid {
 
 Distribution::Distribution( const Grid& grid ) : Handle( new Implementation( grid ) ) {}
+Distribution::Distribution( const Grid& grid, const Config & config ) : Handle( new Implementation( grid, config ) ) {}
 
 Distribution::Distribution( const Grid& grid, const Partitioner& partitioner ) :
     Handle( new Implementation( grid, partitioner ) ) {}
