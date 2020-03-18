@@ -82,6 +82,9 @@ public:
     void print( std::ostream& ) const;
 
 private:
+
+    void setupWithPartitioner (const Grid &, const Partitioner &);
+
     void checkPartition () const
     {
       if (part_.size () == 0)

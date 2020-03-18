@@ -69,7 +69,8 @@ DistributionImpl::DistributionImpl( const Grid & grid, const Config & config )
     }
   else
     {
-      throw_Exception ("TODO : create partitioner using config");
+      Partitioner partitioner (config);
+      setupWithPartitioner (grid, partitioner);
     }
 
 }
@@ -83,44 +84,50 @@ DistributionImpl::DistributionImpl( const Grid& grid ) :
     min_pts_( grid.size() ),
     type_( distribution_type( nb_partitions_ ) ) {}
 
-DistributionImpl::DistributionImpl( const Grid& grid, const Partitioner& partitioner ) : part_( grid.size() ) {
-    partitioner.partition( grid, part_.data() );
-    nb_partitions_ = partitioner.nb_partitions();
+void DistributionImpl::setupWithPartitioner (const Grid & grid, const Partitioner & partitioner)
+{
+  part_.resize (grid.size ());
+  partitioner.partition( grid, part_.data() );
+  nb_partitions_ = partitioner.nb_partitions();
 
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // new
-    size_t size     = part_.size();
-    int num_threads = atlas_omp_get_max_threads();
+  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // new
+  size_t size     = part_.size();
+  int num_threads = atlas_omp_get_max_threads();
 
-    std::vector<std::vector<int> > nb_pts_per_thread( num_threads, std::vector<int>( nb_partitions_ ) );
-    atlas_omp_parallel {
-        int thread   = atlas_omp_get_thread_num();
-        auto& nb_pts = nb_pts_per_thread[thread];
-        atlas_omp_for( size_t j = 0; j < size; ++j ) {
-            int p = part_[j];
-            ++nb_pts[p];
-        }
-    }
+  std::vector<std::vector<int> > nb_pts_per_thread( num_threads, std::vector<int>( nb_partitions_ ) );
+  atlas_omp_parallel {
+      int thread   = atlas_omp_get_thread_num();
+      auto& nb_pts = nb_pts_per_thread[thread];
+      atlas_omp_for( size_t j = 0; j < size; ++j ) {
+          int p = part_[j];
+          ++nb_pts[p];
+      }
+  }
 
-    nb_pts_.resize( nb_partitions_, 0 );
-    for ( int thread = 0; thread < num_threads; ++thread ) {
-        for ( int p = 0; p < nb_partitions_; ++p ) {
-            nb_pts_[p] += nb_pts_per_thread[thread][p];
-        }
-    }
+  nb_pts_.resize( nb_partitions_, 0 );
+  for ( int thread = 0; thread < num_threads; ++thread ) {
+      for ( int p = 0; p < nb_partitions_; ++p ) {
+          nb_pts_[p] += nb_pts_per_thread[thread][p];
+      }
+  }
 
 
-    // ==============================================
-    // previous
-    //
-    // nb_pts_.resize( nb_partitions_, 0 );
-    // for ( idx_t j = 0, size = static_cast<idx_t>( part_.size() ); j < size; ++j ) {
-    //     ++nb_pts_[part_[j]];
-    // }
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    max_pts_ = *std::max_element( nb_pts_.begin(), nb_pts_.end() );
-    min_pts_ = *std::min_element( nb_pts_.begin(), nb_pts_.end() );
-    type_    = distribution_type( nb_partitions_, partitioner );
+  // ==============================================
+  // previous
+  //
+  // nb_pts_.resize( nb_partitions_, 0 );
+  // for ( idx_t j = 0, size = static_cast<idx_t>( part_.size() ); j < size; ++j ) {
+  //     ++nb_pts_[part_[j]];
+  // }
+  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  max_pts_ = *std::max_element( nb_pts_.begin(), nb_pts_.end() );
+  min_pts_ = *std::min_element( nb_pts_.begin(), nb_pts_.end() );
+  type_    = distribution_type( nb_partitions_, partitioner );
+}
+
+DistributionImpl::DistributionImpl( const Grid& grid, const Partitioner& partitioner ) {
+  setupWithPartitioner (grid, partitioner);
 }
 
 DistributionImpl::DistributionImpl( int nb_partitions, idx_t npts, int part[], int part0 ) {
@@ -190,8 +197,6 @@ DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part
 DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _grid, const eckit::Parametrisation * config)
 {
   Grid grid (_grid);
-  int nbands = -1;
-  config->get ("nbands", nbands);
   Partitioner partitioner (*config);
   return new DistributionImpl (grid, partitioner);
 }
