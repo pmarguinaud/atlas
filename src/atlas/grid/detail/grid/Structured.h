@@ -347,6 +347,11 @@ public:
         return std::unique_ptr<Grid::IteratorLonLat>( new IteratorLonLat( *this, false ) );
     }
 
+    gidx_t ij2gidx (idx_t i, idx_t j) const
+    {
+      return jglooff_[j] + i;
+    }
+
 protected:  // methods
     virtual void print( std::ostream& ) const override;
 
@@ -388,6 +393,9 @@ protected:
     /// Periodicity in x-direction
     bool periodic_x_;
 
+    /// Per-row offset
+    std::vector<gidx_t> jglooff_;
+
 private:
     std::string name_ = {"structured"};
     XSpace xspace_;
@@ -418,6 +426,7 @@ Structured* atlas__grid__LambertRegional_long ( long nx, long ny, double xmin, d
 void atlas__grid__Structured__nx_array( Structured* This, const idx_t*& nx, idx_t& size );
 idx_t atlas__grid__Structured__nx( Structured* This, idx_t j );
 idx_t atlas__grid__Structured__ny( Structured* This );
+gidx_t atlas__grid__Structured__ij2gidx (Structured* This, idx_t i, idx_t j);
 idx_t atlas__grid__Structured__nxmin( Structured* This );
 idx_t atlas__grid__Structured__nxmax( Structured* This );
 idx_t atlas__grid__Structured__size( Structured* This );

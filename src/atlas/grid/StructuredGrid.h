@@ -108,6 +108,11 @@ public:
 
     const YSpace& yspace() const { return grid_->yspace(); }
 
+    gidx_t ij2gidx (idx_t i, idx_t j) const
+    {
+      return grid_->ij2gidx (i, j);
+    }
+
 private:
     const grid_t* grid_;
 };
