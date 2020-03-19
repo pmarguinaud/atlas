@@ -352,6 +352,22 @@ public:
       return jglooff_[j] + i;
     }
 
+    void gidx2ij (gidx_t gidx, idx_t ij[]) const
+    {
+      idx_t ja = 0, jb = jglooff_.size ();
+      while (jb - ja > 1)
+        {
+          idx_t jm = (ja + jb) / 2;
+          if (gidx < jglooff_[jm])
+            jb = jm;
+          else 
+            ja = jm;
+        }
+      ij[0] = gidx - jglooff_[ja];
+      ij[1] = ja;
+    }
+
+
 protected:  // methods
     virtual void print( std::ostream& ) const override;
 
@@ -427,6 +443,7 @@ void atlas__grid__Structured__nx_array( Structured* This, const idx_t*& nx, idx_
 idx_t atlas__grid__Structured__nx( Structured* This, idx_t j );
 idx_t atlas__grid__Structured__ny( Structured* This );
 gidx_t atlas__grid__Structured__ij2gidx (Structured* This, idx_t i, idx_t j);
+void atlas__grid__Structured__gidx2ij (Structured* This, gidx_t gidx, idx_t ij[]);
 idx_t atlas__grid__Structured__nxmin( Structured* This );
 idx_t atlas__grid__Structured__nxmax( Structured* This );
 idx_t atlas__grid__Structured__size( Structured* This );

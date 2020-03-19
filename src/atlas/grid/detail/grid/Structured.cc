@@ -531,6 +531,7 @@ void Structured::hash( eckit::Hash& h ) const {
     domain().hash( h );
 }
 
+
 RectangularLonLatDomain Structured::lonlatBoundingBox() const {
     return projection_ ? projection_.lonlatBoundingBox( computeDomain() ) : domain();
 }
@@ -635,6 +636,12 @@ gidx_t atlas__grid__Structured__ij2gidx (Structured* This, idx_t i, idx_t j)
 {
     ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
     return This->ij2gidx( i, j );
+}
+
+void atlas__grid__Structured__gidx2ij (Structured* This, gidx_t gidx, idx_t ij[])
+{
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
+    This->gidx2ij (gidx, ij);
 }
 
 void atlas__grid__Structured__nx_array( Structured* This, const idx_t*& nx_array, idx_t& size ) {

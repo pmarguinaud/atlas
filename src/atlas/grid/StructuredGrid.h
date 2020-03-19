@@ -113,6 +113,11 @@ public:
       return grid_->ij2gidx (i, j);
     }
 
+    void gidx2ij (gidx_t gidx, idx_t ij[]) const
+    {
+      grid_->gidx2ij (gidx, ij);
+    }
+
 private:
     const grid_t* grid_;
 };
