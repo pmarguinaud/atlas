@@ -185,6 +185,7 @@ private:  // methods
     void create_remote_index() const;
 
 private:  // data
+
     std::string distribution_;
 
     const Vertical vertical_;
