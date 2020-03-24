@@ -354,6 +354,8 @@ public:
 
     void gidx2ij (gidx_t gidx, idx_t ij[]) const
     {
+      if ((gidx < 0) || (gidx >= jglooff_.back ()))
+        throw_Exception ("Structured::gidx2ij: gidx out of bounds", Here ());
       idx_t ja = 0, jb = jglooff_.size ();
       while (jb - ja > 1)
         {
