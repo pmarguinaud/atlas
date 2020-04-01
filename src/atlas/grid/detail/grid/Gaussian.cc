@@ -265,7 +265,7 @@ StructuredGrid::grid_t* reduced_gaussian( const std::vector<int> & nx, double ce
                  | Config ("north_pole", std::vector<double>{centre[0], centre[1]})
                  | Config ("arpege", true));
 
-  return new StructuredGrid::grid_t (xspace, yspace, proj, Domain ());
+  return new StructuredGrid::grid_t (xspace, yspace, proj, Domain (Config ("type", "global")));
 }
 
 template <typename Int>
