@@ -35,7 +35,7 @@ std::string distribution_type( int N, const Partitioner& p = Partitioner() ) {
 }
 }  // namespace
 
-DistributionImpl::DistributionImpl( const Grid & grid, const Config & config )
+DistributionImpl::DistributionImpl( const Grid & grid, const eckit::Parametrisation & config )
 {
   bool light = false;
 
@@ -197,8 +197,8 @@ DistributionImpl* atlas__GridDistribution__new( idx_t npts, int part[], int part
 DistributionImpl* atlas__GridDistribution__new_gridconfig (const GridImpl * _grid, const eckit::Parametrisation * config)
 {
   Grid grid (_grid);
-  Partitioner partitioner (*config);
-  return new DistributionImpl (grid, partitioner);
+  DistributionImpl * dist = new DistributionImpl (grid, *config);
+  return dist;
 }
 
 int atlas__GridDistribution__partition_int32 (DistributionImpl * dist, int i)

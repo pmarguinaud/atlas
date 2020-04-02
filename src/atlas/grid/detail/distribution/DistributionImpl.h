@@ -46,7 +46,7 @@ public:
     using partition_t = atlas::vector<int>;
 
     DistributionImpl( const Grid& );
-    DistributionImpl( const Grid&, const Config & );
+    DistributionImpl( const Grid&, const eckit::Parametrisation & );
 
     DistributionImpl( const Grid&, const Partitioner& );
 
