@@ -404,6 +404,24 @@ StructuredGrid::grid_t* lambertregional (long Nx, long Ny, double XMinInMeters, 
   return new StructuredGrid::grid_t (xspace, yspace, proj, Domain ());
 }
 
+static 
+StructuredGrid::grid_t* latlonregional (long Nx, long Ny, double xmin, double xmax, double ymin, double ymax)
+{
+  using namespace atlas::util;
+
+  std::vector<Spacing> spacings (Ny);
+
+  for (int i = 0; i < Ny; i++)
+    spacings[i] = Spacing (Config ("type", "linear") | Config ("N", Nx) 
+                         | Config ("start", xmin) | Config ("end", xmax));
+
+  StructuredGrid::XSpace xspace (spacings);
+  StructuredGrid::YSpace yspace (Config ("type", "linear") | Config ("N", Ny) | Config ("start", ymin) | Config ("end", ymax));
+  Projection proj (Config ("type", "lonlat"));
+
+  return new StructuredGrid::grid_t (xspace, yspace, proj, Domain ());
+}
+
 
 extern "C" {
 
@@ -416,6 +434,14 @@ StructuredGrid::grid_t* atlas__grid__LambertRegional_int ( int nx, int ny, doubl
 StructuredGrid::grid_t* atlas__grid__LambertRegional_long ( long nx, long ny, double xmin, double ymin, double dx, double dy, 
                                                             double longitude0, double latitude0, double latitude1, double latitude2 ) {
     return lambertregional( nx, ny, xmin, ymin, dx, dy, longitude0, latitude0, latitude1, latitude2);
+}
+
+StructuredGrid::grid_t* atlas__grid__LatLonRegional_int ( int nx, int ny, double xmin, double xmax, double ymin, double ymax) {
+    return latlonregional (nx, ny, xmin, xmax, ymin, ymax);
+}
+
+StructuredGrid::grid_t* atlas__grid__LatLonRegional_long ( long nx, long ny, double xmin, double xmax, double ymin, double ymax) {
+    return latlonregional (nx, ny, xmin, xmax, ymin, ymax);
 }
 
 
