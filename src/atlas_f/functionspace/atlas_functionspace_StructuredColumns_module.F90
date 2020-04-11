@@ -237,7 +237,6 @@ function ctor_grid_dist_config(grid, distribution, config) result(this)
       & grid%CPTR_PGIBUG_A, distribution%CPTR_PGIBUG_A, &
       & config%CPTR_PGIBUG_B ) )
   call this%set_index()
-  call config%final()
   call this%return()
 end function
 
