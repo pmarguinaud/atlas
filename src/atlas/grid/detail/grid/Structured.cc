@@ -80,6 +80,12 @@ Structured::Structured( const std::string& name, XSpace xspace, YSpace yspace, P
     crop( domain );
 
     computeTruePeriodicity();
+
+    jglooff_.resize (ny + 1);
+    jglooff_[0] = 0;
+    for (int j = 1; j < ny + 1; j++)
+      jglooff_[j] = jglooff_[j-1] + nx_[j-1];
+
 }
 
 Domain Structured::computeDomain() const {
@@ -509,6 +515,7 @@ void Structured::hash( eckit::Hash& h ) const {
     domain().hash( h );
 }
 
+
 RectangularLonLatDomain Structured::lonlatBoundingBox() const {
     return projection_ ? projection_.lonlatBoundingBox( computeDomain() ) : domain();
 }
@@ -609,6 +616,18 @@ idx_t atlas__grid__Structured__nx( Structured* This, idx_t jlat ) {
     return This->nx( jlat );
 }
 
+gidx_t atlas__grid__Structured__ij2gidx (Structured* This, idx_t i, idx_t j)
+{
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
+    return This->ij2gidx( i, j );
+}
+
+void atlas__grid__Structured__gidx2ij (Structured* This, gidx_t gidx, idx_t ij[])
+{
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
+    This->gidx2ij (gidx, ij);
+}
+
 void atlas__grid__Structured__nx_array( Structured* This, const idx_t*& nx_array, idx_t& size ) {
     ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
     nx_array = This->nx().data();
@@ -628,6 +647,13 @@ idx_t atlas__grid__Structured__nxmin( Structured* This ) {
 idx_t atlas__grid__Structured__size( Structured* This ) {
     ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
     return This->size();
+}
+
+util::Config * atlas__grid__Structured__spec( Structured* This ) {
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_StructuredGrid" );
+    util::Config * config = new util::Config ();
+    *config = This->spec();
+    return config;
 }
 
 double atlas__grid__Structured__y( Structured* This, idx_t j ) {

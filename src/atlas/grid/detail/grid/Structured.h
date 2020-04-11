@@ -345,6 +345,29 @@ public:
         return std::unique_ptr<Grid::IteratorLonLat>( new IteratorLonLat( *this, false ) );
     }
 
+    gidx_t ij2gidx (idx_t i, idx_t j) const
+    {
+      return jglooff_[j] + i;
+    }
+
+    void gidx2ij (gidx_t gidx, idx_t ij[]) const
+    {
+      if ((gidx < 0) || (gidx >= jglooff_.back ()))
+        throw_Exception ("Structured::gidx2ij: gidx out of bounds", Here ());
+      idx_t ja = 0, jb = jglooff_.size ();
+      while (jb - ja > 1)
+        {
+          idx_t jm = (ja + jb) / 2;
+          if (gidx < jglooff_[jm])
+            jb = jm;
+          else 
+            ja = jm;
+        }
+      ij[0] = gidx - jglooff_[ja];
+      ij[1] = ja;
+    }
+
+
 protected:  // methods
     virtual void print( std::ostream& ) const override;
 
@@ -386,6 +409,9 @@ protected:
     /// Periodicity in x-direction
     bool periodic_x_;
 
+    /// Per-row offset
+    std::vector<gidx_t> jglooff_;
+
 private:
     std::string name_ = {"structured"};
     XSpace xspace_;
@@ -399,18 +425,32 @@ const Structured* atlas__grid__Structured( char* identifier );
 const Structured* atlas__grid__Structured__config( util::Config* conf );
 Structured* atlas__grid__regular__RegularGaussian( long N );
 Structured* atlas__grid__reduced__ReducedGaussian_int( int nx[], long ny );
+Structured* atlas__grid__reduced__StretchedRotatedReducedGaussian_int( int nx[], long ny, double centre[], double stretch );
+Structured* atlas__grid__reduced__StretchedRotatedReducedGaussian_long( long nx[], long ny, double centre[], double stretch );
 Structured* atlas__grid__reduced__ReducedGaussian_long( long nx[], long ny );
 Structured* atlas__grid__regular__RegularLonLat( long nx, long ny );
 Structured* atlas__grid__regular__ShiftedLonLat( long nx, long ny );
 Structured* atlas__grid__regular__ShiftedLon( long nx, long ny );
 Structured* atlas__grid__regular__ShiftedLat( long nx, long ny );
+Structured* atlas__grid__LambertRegional_int ( int nx, int ny, double xmin, double ymin, double dx, double dy, 
+                                               double longitude0, double latitude0, double latitude1, double latitude2 );
+
+Structured* atlas__grid__LambertRegional_long ( long nx, long ny, double xmin, double ymin, double dx, double dy, 
+                                                double longitude0, double latitude0, double latitude1, double latitude2 );
+
+Structured* atlas__grid__LatLonRegional_int ( int nx, int ny, double xmin, double xmax, double ymin, double ymax);
+Structured* atlas__grid__LatLonRegional_long ( long nx, long ny, double xmin, double xmax, double ymin, double ymax);
+
 
 void atlas__grid__Structured__nx_array( Structured* This, const idx_t*& nx, idx_t& size );
 idx_t atlas__grid__Structured__nx( Structured* This, idx_t j );
 idx_t atlas__grid__Structured__ny( Structured* This );
+gidx_t atlas__grid__Structured__ij2gidx (Structured* This, idx_t i, idx_t j);
+void atlas__grid__Structured__gidx2ij (Structured* This, gidx_t gidx, idx_t ij[]);
 idx_t atlas__grid__Structured__nxmin( Structured* This );
 idx_t atlas__grid__Structured__nxmax( Structured* This );
 idx_t atlas__grid__Structured__size( Structured* This );
+util::Config * atlas__grid__Structured__spec( Structured* This );
 double atlas__grid__Structured__y( Structured* This, idx_t j );
 double atlas__grid__Structured__x( Structured* This, idx_t i, idx_t j );
 void atlas__grid__Structured__xy( Structured* This, idx_t i, idx_t j, double crd[] );

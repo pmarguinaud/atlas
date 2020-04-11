@@ -180,13 +180,13 @@ void StructuredColumns::setup( const grid::Distribution& distribution, const eck
                     auto& __j_end         = thread_reduce_j_end[thread_num];
                     auto& __owned         = thread_reduce_owned[thread_num];
                     idx_t c               = begin;
-                    const auto& partition = distribution.partition();
+
                     for ( idx_t j = thread_j_begin; j < thread_j_end; ++j ) {
                         auto& __i_begin = thread_reduce_i_begin[j][thread_num];
                         auto& __i_end   = thread_reduce_i_end[j][thread_num];
                         bool j_in_partition{false};
                         for ( idx_t i = thread_i_begin[j]; i < thread_i_end[j]; ++i, ++c ) {
-                            if ( partition[c] == mpi_rank ) {
+                            if ( distribution.partition (c) == mpi_rank ) {
                                 j_in_partition = true;
                                 __i_begin      = std::min<idx_t>( __i_begin, i );
                                 __i_end        = std::max<idx_t>( __i_end, i + 1 );
@@ -269,7 +269,7 @@ void StructuredColumns::setup( const grid::Distribution& distribution, const eck
     auto compute_x_fast = [this, &compute_i_fast]( idx_t i, idx_t jj, idx_t nx ) -> double {
         const idx_t ii = compute_i_fast( i, nx );  // guaranteed between 0 and nx(jj)
         const double a = ( ii - i ) / nx;
-        const double x = grid_->x( ii, jj ) - a * grid_->x( nx, jj );
+        const double x = grid_->x( ii, jj ) - a * (grid_->x( nx, jj ) - grid_->x(0, jj));
         return x;
     };
 
@@ -461,17 +461,25 @@ void StructuredColumns::setup( const grid::Distribution& distribution, const eck
                         if ( j > thread_j_begin ) {
                             thread_i_begin[j] = i_begin_[j];
                         }
-                        idx_t remaining = static_cast<idx_t>( end - n );
                         idx_t j_size    = ( i_end_[j] - i_begin_[j] );
-                        if ( remaining > j_size ) {
+ 
+                        idx_t remaining = static_cast<idx_t>(end - n);
+                        if (j_size <= remaining) {
                             thread_i_end[j] = i_end_[j];
                             n += j_size;
-                        }
+                            if (n == end)
+                              goto stop;
+                        } 
                         else {
-                            thread_i_end[j] = thread_i_begin[j] + remaining;
-                            thread_j_end    = j + 1;
-                            break;
+                            thread_i_end[j] = i_begin_[j] + remaining;
+                            goto stop;
                         }
+
+                       continue;
+
+                       stop:
+                          thread_j_end    = j + 1;
+                          break;
                     }
 
                     idx_t r = idx_t( begin );
@@ -542,7 +550,6 @@ void StructuredColumns::setup( const grid::Distribution& distribution, const eck
         auto index_i    = array::make_indexview<idx_t, 1>( field_index_i_ );
         auto index_j    = array::make_indexview<idx_t, 1>( field_index_j_ );
 
-        const auto& partition = distribution.partition();
         atlas_omp_parallel_for( idx_t n = 0; n < gridpoints.size(); ++n ) {
             const GridPoint& gp = gridpoints[n];
             if ( gp.j >= 0 && gp.j < grid_->ny() ) {
@@ -559,7 +566,7 @@ void StructuredColumns::setup( const grid::Distribution& distribution, const eck
                 if ( gp.i >= 0 && gp.i < grid_->nx( gp.j ) ) {
                     in_domain          = true;
                     gidx_t k           = global_offsets[gp.j] + gp.i;
-                    part( gp.r )       = partition[k];
+                    part( gp.r )       = distribution.partition (k);
                     global_idx( gp.r ) = k + 1;
                 }
             }
