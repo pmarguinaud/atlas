@@ -105,14 +105,15 @@ ProjectionImpl::Jacobian SchmidtProjectionT<Rotation>::getJacobianAtLonLat (cons
   double zomc2 = 1.0 - 1.0 / (c_ * c_);
   double zopc2 = 1.0 + 1.0 / (c_ * c_);
 
-  double zcoslat = cos (D2R (xy[1])), zsinlat = sin (D2R (xy[1]));
+  double zcosy = cos (D2R (xy[1])), zsiny = sin (D2R (xy[1]));
+  double zcoslat = cos (D2R (lonlat.lat ()));
 
-  double zfactor = sqrt ((zopc2 + zsinlat * zomc2) * (zopc2 + zsinlat * zomc2) 
+  double zfactor = sqrt ((zopc2 + zsiny * zomc2) * (zopc2 + zsiny * zomc2) 
                        / (zopc2 * zopc2 - zomc2 * zomc2));
 
 
-  jac[0] = {u0u1 * zfactor / zcoslat, v0u1 * zfactor / zcoslat};
-  jac[1] = {u0v1 * zfactor, v0v1 * zfactor};
+  jac[0] = {zcoslat * u0u1 * zfactor / zcosy, v0u1 * zfactor / zcosy};
+  jac[1] = {zcoslat * u0v1 * zfactor        , v0v1 * zfactor        };
 
   return jac;
 }
