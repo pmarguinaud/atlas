@@ -100,6 +100,11 @@ void LambertConformalConicProjection::xy2lonlat( double crd[] ) const {
             : util::Constants::radiansToDegrees() * 2. * std::atan( std::pow( radius_ * F_ / rho, inv_n_ ) ) - 90.;
 }
 
+ProjectionImpl::Jacobian LambertConformalConicProjection::getJacobianAtLonLat (const PointLonLat &) const 
+{
+  throw_NotImplemented ("LambertConformalConicProjection::getJacobianAtLonLat", Here ());
+}
+
 LambertConformalConicProjection::Spec LambertConformalConicProjection::spec() const {
     Spec spec;
     spec.set( "type", static_type() );

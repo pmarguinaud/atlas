@@ -37,6 +37,7 @@ namespace detail {
 class ProjectionImpl : public util::Object {
 public:
     using Spec = atlas::util::Config;
+    using Jacobian = std::array<std::array<double, 2>, 2>;
 
 public:
     static const ProjectionImpl* create( const eckit::Parametrisation& p );
@@ -48,6 +49,8 @@ public:
 
     virtual void xy2lonlat( double crd[] ) const = 0;
     virtual void lonlat2xy( double crd[] ) const = 0;
+
+    virtual Jacobian getJacobianAtLonLat (const PointLonLat &) const = 0;
 
     void xy2lonlat( Point2& ) const;
     void lonlat2xy( Point2& ) const;
