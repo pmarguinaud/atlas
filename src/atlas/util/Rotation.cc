@@ -266,6 +266,8 @@ void Rotation::rotate( double crd[] ) const {
         return;
     }
 
+    crd[LON] -= angle_;
+
     if ( !rotation_angle_only_ ) {
         const PointLonLat L( wrap_latitude( {crd[LON], crd[LAT]} ) );
         PointXYZ P;
@@ -279,7 +281,6 @@ void Rotation::rotate( double crd[] ) const {
         crd[LAT] = Lt.lat();
     }
 
-    crd[LON] -= angle_;
 }
 
 void Rotation::unrotate( double crd[] ) const {
