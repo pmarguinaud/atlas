@@ -113,6 +113,7 @@ int atlas__GridDistribution__partition_int32 (DistributionImpl * dist, int i);
 long atlas__GridDistribution__partition_int64 (DistributionImpl * dist, long i);
 long atlas__GridDistribution__nb_partitions (DistributionImpl * dist);
 void atlas__GridDistribution__delete( DistributionImpl* This );
+void atlas__GridDistribution__nb_pts (DistributionImpl * This, idx_t nb_pts[]);
 }
 
 }  // namespace grid
