@@ -45,7 +45,7 @@ contains
   procedure, private :: partition_int64 => GridDistribution__partition_int64
   procedure :: nb_partitions => GridDistribution__nb_partitions
   generic :: partition => partition_int32, partition_int64
-  procecure :: nb_pts => atlas_GridDistribution__nb_pts
+  procedure :: nb_pts => atlas_GridDistribution__nb_pts
 #if FCKIT_FINAL_NOT_INHERITING
   final :: atlas_GridDistribution__final_auto
 #endif
@@ -128,13 +128,13 @@ function GridDistribution__nb_partitions(this) result(nb_partitions)
   nb_partitions = atlas__GridDistribution__nb_partitions (this%CPTR_PGIBUG_A)
 end function
 
-function atlas_GridDistribution__nb_pts() result(nb_pts)
+function atlas_GridDistribution__nb_pts(this) result(nb_pts)
   use atlas_distribution_c_binding
   use fckit_module, only : fckit_mpi_comm
   use atlas_kinds_module, only : ATLAS_KIND_IDX
-  type (fckit_mpi_comm) :: comm
-  type(atlas_GridDistribution) :: this
+  class(atlas_GridDistribution) :: this
   integer(kind=ATLAS_KIND_IDX), allocatable :: nb_pts(:)
+  type (fckit_mpi_comm) :: comm
   comm = fckit_mpi_comm ()
   allocate (nb_pts (comm%size ()))
   call atlas__GridDistribution__nb_pts(this%CPTR_PGIBUG_A, nb_pts)
