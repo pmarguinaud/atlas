@@ -41,6 +41,15 @@ public:
     {
     public:
 
+      static Jacobian Id () 
+      {
+        Jacobian id;
+        id[0] = {1.0, 0.0};
+        id[1] = {0.0, 1.0};
+        return id;
+      }
+
+
       Jacobian inverse () const
       {
         const Jacobian & jac = *this;
@@ -69,6 +78,31 @@ public:
         jac[1][0] = jac1[1][0] * jac2[0][0] + jac1[1][1] * jac2[1][0];
         jac[1][1] = jac1[1][0] * jac2[0][1] + jac1[1][1] * jac2[1][1];
         return jac;
+      }
+
+      Jacobian operator - (const Jacobian & jac2) const
+      {
+        const Jacobian & jac1 = *this;
+        Jacobian jac;
+        jac[0][0] = jac1[0][0] - jac2[0][0]; jac[0][1] = jac1[0][1] - jac2[0][1];
+        jac[1][0] = jac1[1][0] - jac2[1][0]; jac[1][1] = jac1[1][1] - jac2[1][1];
+        return jac;
+      }
+
+      Jacobian operator + (const Jacobian & jac2) const
+      {
+        const Jacobian & jac1 = *this;
+        Jacobian jac;
+        jac[0][0] = jac1[0][0] + jac2[0][0]; jac[0][1] = jac1[0][1] + jac2[0][1];
+        jac[1][0] = jac1[1][0] + jac2[1][0]; jac[1][1] = jac1[1][1] + jac2[1][1];
+        return jac;
+      }
+
+      double norm () const
+      {
+        const Jacobian & jac = *this;
+        return sqrt (jac[0][0] * jac[0][0] + jac[0][1] * jac[0][1]
+                   + jac[1][0] * jac[1][0] + jac[1][1] * jac[1][1]);
       }
 
       double dx_dlon () const { const Jacobian & jac = *this; return jac[JDX][JDLON]; }
