@@ -138,6 +138,12 @@ void Grid::detachObserver( GridObserver& observer ) const {
                            grid_observers_.end() );
 }
 
+void atlas__grid__Grid__lonlatboundingbox( Grid* This, double & w, double & e, double & s, double & n ) { 
+    ATLAS_ASSERT( This != nullptr, "Cannot access uninitialised atlas_Grid" );
+    auto d = This->lonlatBoundingBox (); 
+    w = d.west (); e = d.east (); n = d.north (); s = d.south (); 
+}
+
 }  // namespace grid
 }  // namespace detail
 }  // namespace grid

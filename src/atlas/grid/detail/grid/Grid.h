@@ -177,6 +177,9 @@ public:
 
 //----------------------------------------------------------------------------------------------------------------------
 
+extern "C" {
+void atlas__grid__Grid__lonlatboundingbox( Grid* This, double & w, double & e, double & s, double & n );
+}
 
 }  // namespace grid
 }  // namespace detail
